@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Acesso interno | Antimary{% endblock %}
+{% block branding %}
+<div class="login-brand">
+  <span class="login-brand-mark" aria-hidden="true">
+    <svg viewBox="0 0 40 40"><path d="M32.8 7.3C19.5 7.1 9.1 11.5 8.2 21.1c-.5 5.2 3.2 8.5 7.8 8.2 9.1-.6 15.8-10.9 16.8-22Z"/><path d="M7.5 34c4-7.5 10.6-13.1 19.2-17.2"/></svg>
+  </span>
+  <span class="login-brand-copy"><strong>ANTIMARY</strong><small>PAINEL TERRITORIAL</small></span>
+</div>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'mapa/css/login.css' %}">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} login login-page{% endblock %}
+
+{% block content %}
+<main class="login-shell">
+  <section class="login-visual" aria-label="Floresta Estadual do Antimary">
+    <div class="visual-topline"><span class="visual-status-dot"></span> UNIDADE DE CONSERVAÇÃO · ACRE, BRASIL</div>
+    <div class="visual-copy">
+      <span class="visual-kicker">AMAZÔNIA OCIDENTAL</span>
+      <h1>Floresta Estadual<br><span>do Antimary</span></h1>
+      <p>Gestão territorial e acompanhamento das informações da unidade.</p>
+    </div>
+    <div class="visual-footer"><span>FLORESTA · TERRITÓRIO · COMUNIDADE</span><span>ACRE, BRASIL</span></div>
+  </section>
+
+  <section class="login-side">
+    <div class="login-mobile-brand">
+      <span class="login-brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 40 40"><path d="M32.8 7.3C19.5 7.1 9.1 11.5 8.2 21.1c-.5 5.2 3.2 8.5 7.8 8.2 9.1-.6 15.8-10.9 16.8-22Z"/><path d="M7.5 34c4-7.5 10.6-13.1 19.2-17.2"/></svg>
+      </span>
+      <span class="login-brand-copy"><strong>ANTIMARY</strong><small>PAINEL TERRITORIAL</small></span>
+    </div>
+
+    <div class="login-form-wrap">
+      <span class="login-lock" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg>
+      </span>
+      <div class="login-eyebrow">ACESSO INTERNO</div>
+      <h2>Bem-vindo de volta</h2>
+      <p class="login-description">Entre com sua conta para acessar o painel territorial.</p>
+
+      {% if form.errors %}
+        <div class="login-alert" role="alert">Não foi possível entrar. Confira seu usuário e sua senha e tente novamente.</div>
+      {% endif %}
+      {% if user.is_authenticated %}
+        <div class="login-alert" role="alert">Esta conta não tem acesso ao painel administrativo. Entre com uma conta autorizada.</div>
+      {% endif %}
+
+      <form class="login-form" method="post" action="{{ app_path }}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+
+        <div class="login-field">
+          <label for="{{ form.username.id_for_label }}">Usuário</label>
+          {{ form.username }}
+        </div>
+        <div class="login-field">
+          <label for="{{ form.password.id_for_label }}">Senha</label>
+          {{ form.password }}
+        </div>
+
+        <button class="login-submit" type="submit">Entrar no painel <span aria-hidden="true">→</span></button>
+      </form>
+
+      <div class="login-security"><span class="login-security-dot"></span>Acesso restrito a usuários autorizados</div>
+    </div>
+
+    <footer class="login-footer">© Antimary · Painel de gestão territorial</footer>
+  </section>
+</main>
+{% endblock %}
