@@ -21,18 +21,19 @@ O mapa lê a coleção `moradores` do Cloud Firestore e usa `localizacao` no for
 `latitude, longitude`. Fotos são carregadas das URLs HTTPS do Cloudinary em
 `imagens[].url`.
 
-Os registros individuais contêm informações pessoais. A página inicial e a API
-de moradores ficam restritas a usuários internos com acesso de staff no Django.
-Crie um usuário administrador com:
+O mapa e a API de moradores são públicos e exibem os dados e imagens retornados
+pelo Firebase. Publique somente registros e fotos autorizados para divulgação.
+O Django Admin continua protegido por autenticação. Se precisar administrar o
+site, crie um usuário administrador com:
 
 ```powershell
 .\venv\Scripts\python.exe manage.py migrate
 .\venv\Scripts\python.exe manage.py createsuperuser
 ```
 
-Entre pela tela do Django Admin antes de abrir o mapa. Em produção, configure
+Entre pela tela do Django Admin para administração. Em produção, configure
 `DJANGO_DEBUG=false`, `DJANGO_SECRET_KEY` e `DJANGO_ALLOWED_HOSTS` para o domínio
-interno antes de iniciar o serviço.
+antes de iniciar o serviço.
 
 ## Publicar no Render
 
@@ -54,5 +55,5 @@ interno antes de iniciar o serviço.
    cria o primeiro usuário interno; depois da publicação, remova essas três
    variáveis e entre em `/admin/` com a conta criada.
 
-O mapa e os dados de moradores continuam protegidos por login de staff. O
-`health/` é público para a verificação de disponibilidade do Render.
+O mapa, a API de moradores e `health/` são públicos. O Django Admin continua
+protegido por login.

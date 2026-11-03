@@ -15,10 +15,11 @@ class HomePageTests(TestCase):
             is_staff=True,
         )
 
-    def test_homepage_requires_internal_staff_login(self):
+    def test_homepage_is_public(self):
         response = self.client.get('/')
 
-        self.assertRedirects(response, '/admin/login/?next=/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'mapa-interativo')
 
     def test_admin_login_uses_antimary_branding(self):
         response = self.client.get('/admin/login/')
@@ -57,7 +58,6 @@ class HomePageTests(TestCase):
         self.assertEqual(response.content, b'ok')
 
     def test_homepage_displays_interactive_forest_map(self):
-        self.client.force_login(self.user)
         response = self.client.get('/')
 
         self.assertEqual(response.status_code, 200)
@@ -68,11 +68,6 @@ class HomePageTests(TestCase):
         self.assertContains(response, 'record-panel')
         self.assertContains(response, '/static/mapa/js/home')
 
-    def test_moradores_api_requires_internal_staff_login(self):
-        response = self.client.get('/api/moradores/')
-
-        self.assertRedirects(response, '/admin/login/?next=/api/moradores/')
-
     @patch('mapa.views.get_moradores')
     def test_moradores_api_returns_records_without_caching(self, get_moradores):
         get_moradores.return_value = [{
@@ -82,8 +77,6 @@ class HomePageTests(TestCase):
             'fields': [],
             'images': [],
         }]
-        self.client.force_login(self.user)
-
         response = self.client.get('/api/moradores/')
 
         self.assertEqual(response.status_code, 200)
