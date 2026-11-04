@@ -62,6 +62,14 @@ DISPLAY_FIELDS = (
     ('entrevistador', 'Entrevistador'),
 )
 
+RESIDENT_FIELDS = (
+    ('dataNascimento', 'Data de nascimento'),
+    ('escolaridade', 'Escolaridade'),
+    ('estadoCivil', 'Estado civil'),
+    ('genero', 'Gênero'),
+    ('relacao', 'Relação familiar'),
+)
+
 
 def _get_firestore_client():
     credential_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT_JSON')
@@ -150,6 +158,36 @@ def _cloudinary_images(value):
     return images
 
 
+def _morador_title(data):
+    return str(data.get('nome') or 'Morador sem nome informado')
+
+
+def _morador_fields(data):
+    return [
+        {'label': label, 'value': _json_value(data[field])}
+        for field, label in DISPLAY_FIELDS
+        if data.get(field) not in (None, '', [])
+    ]
+
+
+def _morador_residents(data):
+    residents = []
+    if isinstance(data.get('moradores'), list):
+        for resident in data['moradores']:
+            if not isinstance(resident, dict):
+                continue
+            fields = [
+                {'label': label, 'value': _json_value(resident[field])}
+                for field, label in RESIDENT_FIELDS
+                if resident.get(field) not in (None, '', [])
+            ]
+            residents.append({
+                'name': str(resident.get('nome') or 'Morador sem nome informado'),
+                'fields': fields,
+            })
+    return residents
+
+
 def _morador_record(document):
     data = document.to_dict() or {}
     coordinates = _coordinates(data.get('localizacao'))
@@ -157,17 +195,13 @@ def _morador_record(document):
         return None
 
     latitude, longitude = coordinates
-    fields = [
-        {'label': label, 'value': _json_value(data[field])}
-        for field, label in DISPLAY_FIELDS
-        if data.get(field) not in (None, '', [])
-    ]
     return {
         'id': document.id,
         'latitude': latitude,
         'longitude': longitude,
-        'title': str(data.get('nome') or 'Morador sem nome informado'),
-        'fields': fields,
+        'title': _morador_title(data),
+        'fields': _morador_fields(data),
+        'residents': _morador_residents(data),
         'images': _cloudinary_images(data.get('imagens')),
     }
 
@@ -185,3 +219,94 @@ def get_moradores():
             'Não foi possível consultar os dados de moradores no Firestore.'
         ) from error
     return records
+
+
+def get_morador_detail(record_id):
+    client = _get_firestore_client()
+    try:
+        document = client.collection('moradores').document(record_id).get()
+    except GoogleAPICallError as error:
+        raise FirebaseUnavailable(
+            'Não foi possível consultar os detalhes do cadastro no Firestore.'
+        ) from error
+
+    if not document.exists:
+        return None
+
+    data = document.to_dict() or {}
+    coordinates = _coordinates(data.get('localizacao'))
+    return {
+        'id': document.id,
+        'title': _morador_title(data),
+        'coordinates': (
+            {'latitude': coordinates[0], 'longitude': coordinates[1]}
+            if coordinates
+            else None
+        ),
+        'fields': _morador_fields(data),
+        'residents': _morador_residents(data),
+        'images': _cloudinary_images(data.get('imagens')),
+    }
+
+
+def get_cadastros_summary():
+    client = _get_firestore_client()
+    records = []
+    colonies = {}
+    genders = {}
+    linked_residents = 0
+
+    try:
+        for document in client.collection('moradores').stream():
+            data = document.to_dict() or {}
+            resident_data = data.get('moradores')
+            residents = (
+                [resident for resident in resident_data if isinstance(resident, dict)]
+                if isinstance(resident_data, list)
+                else []
+            )
+            colony = data.get('colonia')
+            colony = str(colony).strip() if colony not in (None, '') else 'Não informada'
+            registered_at = data.get('registrado_em')
+            if isinstance(registered_at, (datetime, date)):
+                registered_at = _json_value(registered_at)
+            elif registered_at is not None:
+                registered_at = str(registered_at)
+            records.append({
+                'id': document.id,
+                'name': str(data.get('nome') or 'Morador sem nome informado'),
+                'colony': colony,
+                'registered_at': _json_value(registered_at),
+                'linked_residents': len(residents),
+            })
+            colonies[colony] = colonies.get(colony, 0) + 1
+            linked_residents += len(residents)
+
+            for resident in residents:
+                gender = resident.get('genero')
+                gender = str(gender).strip() if gender not in (None, '') else 'Não informado'
+                genders[gender] = genders.get(gender, 0) + 1
+    except GoogleAPICallError as error:
+        raise FirebaseUnavailable(
+            'Não foi possível consultar os dados de moradores no Firestore.'
+        ) from error
+
+    return {
+        'records': records,
+        'total_records': len(records),
+        'linked_residents': linked_residents,
+        'by_colony': [
+            {'label': label, 'count': count}
+            for label, count in sorted(
+                colonies.items(),
+                key=lambda item: (-item[1], item[0].casefold()),
+            )
+        ],
+        'residents_by_gender': [
+            {'label': label, 'count': count}
+            for label, count in sorted(
+                genders.items(),
+                key=lambda item: (-item[1], item[0].casefold()),
+            )
+        ],
+    }

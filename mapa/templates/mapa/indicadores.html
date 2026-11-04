@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#174a35">
+  <title>Cadastros e indicadores | SEMA/AC</title>
+  <link rel="stylesheet" href="{% static 'mapa/css/home.css' %}">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <a class="brand" href="/" aria-label="SEMA Acre, painel territorial do Antimary">
+        <span class="brand-mark" aria-hidden="true">AC</span>
+        <span class="brand-copy"><strong>SEMA/AC</strong><small>MEIO AMBIENTE</small></span>
+      </a>
+
+      <div class="sidebar-label">SECRETARIA DE ESTADO</div>
+      <nav class="main-nav">
+        <a class="nav-link" href="/">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15m6-12v15"/></svg>
+          <span>Mapa territorial</span>
+        </a>
+        <a class="nav-link active" href="{% url 'indicadores' %}" aria-current="page">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h17M8 16v-4m5 4V8m5 8v-6"/></svg>
+          <span>Indicadores e cadastros</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="forest-status"><span class="status-dot"></span><span><strong>Unidade de conservação</strong><small>Floresta Estadual do Antimary</small></span></div>
+        <div class="sidebar-caption">Governo do Estado do Acre</div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumb"><span>SEMA · ANTIMARY</span><span class="breadcrumb-separator">/</span><strong>INDICADORES</strong></div>
+        <div class="topbar-right">Secretaria de Estado do Meio Ambiente</div>
+      </header>
+
+      <section class="page-content indicators-content">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">GESTÃO AMBIENTAL · ACRE</div>
+            <h1>Cadastros e indicadores</h1>
+            <p class="page-description">Visão geral dos registros da Floresta Estadual do Antimary.</p>
+          </div>
+          <div class="indicators-actions">
+            <button class="indicators-map-link report-button" id="generate-report" type="button" disabled>
+              Gerar relatório PDF
+            </button>
+            <a class="indicators-map-link" href="/">Voltar ao mapa</a>
+          </div>
+        </div>
+
+        <div class="print-report-heading" aria-hidden="true">
+          <strong>Secretaria de Estado do Meio Ambiente do Acre · SEMA/AC</strong>
+          <span>Relatório gerado em <time id="report-date"></time></span>
+        </div>
+
+        <div class="indicator-summary" aria-label="Resumo dos cadastros" aria-live="polite">
+          <article class="indicator-card">
+            <span>Cadastros</span>
+            <strong id="total-records">—</strong>
+            <small>registros encontrados</small>
+          </article>
+          <article class="indicator-card">
+            <span>Moradores vinculados</span>
+            <strong id="total-residents">—</strong>
+            <small>informados nos cadastros</small>
+          </article>
+          <article class="indicator-card">
+            <span>Colônias</span>
+            <strong id="total-colonies">—</strong>
+            <small>com registros associados</small>
+          </article>
+        </div>
+
+        <div class="indicator-charts">
+          <section class="indicator-card chart-card" aria-labelledby="colony-chart-title">
+            <div class="chart-heading">
+              <div><h2 id="colony-chart-title">Cadastros por colônia</h2><p>Distribuição dos registros por localidade</p></div>
+            </div>
+            <div class="chart-list" id="colony-chart" role="list" aria-live="polite">
+              <p class="chart-state">Carregando indicadores…</p>
+            </div>
+          </section>
+          <section class="indicator-card chart-card" aria-labelledby="gender-chart-title">
+            <div class="chart-heading">
+              <div><h2 id="gender-chart-title">Gênero dos moradores vinculados</h2><p>Conforme a informação declarada nos cadastros</p></div>
+            </div>
+            <div class="chart-list" id="gender-chart" role="list" aria-live="polite">
+              <p class="chart-state">Carregando indicadores…</p>
+            </div>
+          </section>
+        </div>
+
+        <section class="registrations-card" aria-labelledby="registrations-title">
+          <div class="registrations-heading">
+            <div>
+              <h2 id="registrations-title">Todos os cadastrados</h2>
+              <p id="records-count">Carregando registros…</p>
+            </div>
+            <label class="registrations-search">
+              <span class="visually-hidden">Buscar por nome ou colônia</span>
+              <input id="records-search" type="search" placeholder="Buscar nome ou colônia">
+            </label>
+          </div>
+          <p class="registrations-state" id="registrations-state" role="status" hidden></p>
+          <div class="registrations-table-wrap">
+            <table class="registrations-table">
+              <thead>
+                <tr>
+                  <th scope="col">Nome do cadastro</th>
+                  <th scope="col">Colônia</th>
+                  <th scope="col">Moradores vinculados</th>
+                  <th scope="col">Data do cadastro</th>
+                </tr>
+              </thead>
+              <tbody id="records-list"></tbody>
+            </table>
+          </div>
+        </section>
+        <dialog class="registration-detail" id="registration-detail" aria-labelledby="detail-title">
+          <div class="detail-header">
+            <div>
+              <span class="panel-eyebrow">FICHA DE CADASTRO</span>
+              <h2 id="detail-title">Detalhes do cadastro</h2>
+            </div>
+            <button class="record-close" id="detail-close" type="button" aria-label="Fechar detalhes">×</button>
+          </div>
+          <p class="detail-state" id="detail-state" role="status">Carregando cadastro…</p>
+          <div id="detail-content" hidden>
+            <p class="detail-location" id="detail-location"></p>
+            <div class="record-images" id="detail-images"></div>
+            <section class="detail-section" aria-labelledby="detail-fields-title">
+              <h3 id="detail-fields-title">Informações do cadastro</h3>
+              <div class="detail-fields" id="detail-fields"></div>
+            </section>
+            <section class="detail-section" id="detail-residents-section" hidden>
+              <h3 id="detail-residents-title">Moradores vinculados</h3>
+              <div id="detail-residents"></div>
+            </section>
+          </div>
+        </dialog>
+        <div class="page-footnote">Painel territorial · Secretaria de Estado do Meio Ambiente do Acre</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="{% static 'mapa/js/indicadores.js' %}" defer></script>
+</body>
+</html>

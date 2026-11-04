@@ -15,11 +15,21 @@ class HomePageTests(TestCase):
             is_staff=True,
         )
 
-    def test_homepage_is_public(self):
+    def test_homepage_requires_pin(self):
         response = self.client.get('/')
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'mapa-interativo')
+        self.assertTemplateUsed(response, 'mapa/pin.html')
+        self.assertContains(response, 'PIN de 4 dígitos')
+        self.assertContains(response, '/static/mapa/images/amanhecer-floresta-amazonica.')
+        self.assertNotContains(response, 'mapa-interativo')
+
+    def test_homepage_rejects_invalid_pin(self):
+        response = self.client.post('/', {'pin': '0000'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'PIN inválido')
+        self.assertTemplateUsed(response, 'mapa/pin.html')
 
     def test_admin_login_uses_antimary_branding(self):
         response = self.client.get('/admin/login/')
@@ -58,6 +68,9 @@ class HomePageTests(TestCase):
         self.assertEqual(response.content, b'ok')
 
     def test_homepage_displays_interactive_forest_map(self):
+        response = self.client.post('/', {'pin': '1242'})
+        self.assertRedirects(response, '/')
+
         response = self.client.get('/')
 
         self.assertEqual(response.status_code, 200)
@@ -68,8 +81,26 @@ class HomePageTests(TestCase):
         self.assertContains(response, 'record-panel')
         self.assertContains(response, '/static/mapa/js/home')
 
+    def test_indicators_page_requires_pin(self):
+        response = self.client.get('/indicadores/')
+
+        self.assertRedirects(response, '/')
+
+    def test_indicators_page_displays_dashboard(self):
+        self.client.post('/', {'pin': '1242'})
+
+        response = self.client.get('/indicadores/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'mapa/indicadores.html')
+        self.assertContains(response, 'Todos os cadastrados')
+        self.assertContains(response, 'Gerar relatório PDF')
+        self.assertContains(response, '/static/mapa/js/indicadores')
+        self.assertEqual(response['Cache-Control'], 'no-store')
+
     @patch('mapa.views.get_moradores')
     def test_moradores_api_returns_records_without_caching(self, get_moradores):
+        self.client.post('/', {'pin': '1242'})
         get_moradores.return_value = [{
             'id': 'record-1',
             'latitude': -9.3,
@@ -83,6 +114,85 @@ class HomePageTests(TestCase):
         self.assertEqual(response.json()['moradores'][0]['id'], 'record-1')
         self.assertEqual(response['Cache-Control'], 'no-store')
         get_moradores.assert_called_once_with()
+
+    @patch('mapa.views.get_moradores')
+    def test_moradores_api_requires_pin(self, get_moradores):
+        response = self.client.get('/api/moradores/')
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()['error'], 'Informe o PIN para acessar os dados do mapa.')
+        self.assertEqual(response['Cache-Control'], 'no-store')
+        get_moradores.assert_not_called()
+
+    @patch('mapa.views.get_cadastros_summary')
+    def test_indicators_api_returns_summary_without_caching(self, get_summary):
+        self.client.post('/', {'pin': '1242'})
+        summary = {
+            'records': [{
+                'id': 'record-1',
+                'name': 'Cadastro um',
+                'colony': 'Colônia Esperança',
+                'registered_at': '2025-03-14',
+                'linked_residents': 2,
+            }],
+            'total_records': 1,
+            'linked_residents': 2,
+            'by_colony': [{'label': 'Colônia Esperança', 'count': 1}],
+            'residents_by_gender': [{'label': 'Feminino', 'count': 2}],
+        }
+        get_summary.return_value = summary
+
+        response = self.client.get('/api/indicadores/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), summary)
+        self.assertEqual(response['Cache-Control'], 'no-store')
+        get_summary.assert_called_once_with()
+
+    @patch('mapa.views.get_cadastros_summary')
+    def test_indicators_api_requires_pin(self, get_summary):
+        response = self.client.get('/api/indicadores/')
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response['Cache-Control'], 'no-store')
+        get_summary.assert_not_called()
+
+    @patch('mapa.views.get_morador_detail')
+    def test_morador_detail_api_returns_record_without_caching(self, get_detail):
+        self.client.post('/', {'pin': '1242'})
+        detail = {
+            'id': 'record-1',
+            'title': 'Cadastro um',
+            'coordinates': None,
+            'fields': [{'label': 'Colônia', 'value': 'Esperança'}],
+            'residents': [],
+            'images': [],
+        }
+        get_detail.return_value = detail
+
+        response = self.client.get('/api/moradores/record-1/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), detail)
+        self.assertEqual(response['Cache-Control'], 'no-store')
+        get_detail.assert_called_once_with('record-1')
+
+    @patch('mapa.views.get_morador_detail')
+    def test_morador_detail_api_requires_pin(self, get_detail):
+        response = self.client.get('/api/moradores/record-1/')
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response['Cache-Control'], 'no-store')
+        get_detail.assert_not_called()
+
+    @patch('mapa.views.get_morador_detail', return_value=None)
+    def test_morador_detail_api_returns_not_found_for_missing_record(self, get_detail):
+        self.client.post('/', {'pin': '1242'})
+
+        response = self.client.get('/api/moradores/missing/')
+
+        self.assertEqual(response.status_code, 404)
+        get_detail.assert_called_once_with('missing')
 
 
 class BootstrapAdminTests(TestCase):

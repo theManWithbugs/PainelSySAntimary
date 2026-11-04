@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#174a35">
+  <title>Acesso ao mapa | SEMA/AC</title>
+  <link rel="stylesheet" href="{% static 'mapa/css/home.css' %}">
+</head>
+<body class="pin-page">
+  <div class="pin-background" aria-hidden="true">
+    <img
+      src="{% static 'mapa/images/amanhecer-floresta-amazonica.png' %}"
+      alt=""
+    >
+  </div>
+  <main class="pin-shell">
+    <section class="pin-panel" aria-labelledby="pin-title">
+      <div class="pin-brand">
+        <span class="pin-brand-mark" aria-hidden="true">AC</span>
+        <span><strong>SEMA/AC</strong><small>SECRETARIA DE ESTADO DO MEIO AMBIENTE</small></span>
+      </div>
+
+      <div class="pin-content">
+        <div class="pin-access-label">
+          <span class="pin-lock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          </span>
+          <span>Acesso restrito</span>
+        </div>
+        <h1 id="pin-title">Acesso ao mapa</h1>
+        <p class="pin-description">Floresta Estadual do Antimary<br>Informe seu PIN para continuar.</p>
+
+        {% if error %}
+          <p class="pin-error" id="pin-error" role="alert">{{ error }}</p>
+        {% endif %}
+
+        <form class="pin-form" method="post" action="{% url 'home' %}">
+          {% csrf_token %}
+          <label for="map-pin">PIN de 4 dígitos</label>
+          <input
+            id="map-pin"
+            name="pin"
+            type="password"
+            inputmode="numeric"
+            pattern="[0-9]{4}"
+            minlength="4"
+            maxlength="4"
+            autocomplete="one-time-code"
+            aria-describedby="pin-help{% if error %} pin-error{% endif %}"
+            required
+            autofocus
+          >
+          <small id="pin-help">Digite os quatro números fornecidos pela equipe.</small>
+          <button type="submit">Acessar o mapa <span aria-hidden="true">→</span></button>
+        </form>
+      </div>
+
+      <footer class="pin-footer">Governo do Estado do Acre · SEMA/AC</footer>
+    </section>
+  </main>
+</body>
+</html>

@@ -20,7 +20,7 @@
   });
   const satelliteTiles = L.tileLayer(
     "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    { maxZoom: 19, attribution: "Tiles &copy; Esri", className: "satellite-tiles" },
+    { maxZoom: 19, maxNativeZoom: 17, attribution: "Tiles &copy; Esri", className: "satellite-tiles" },
   );
   let showingSatellite = true;
   satelliteTiles.addTo(map);
@@ -36,6 +36,8 @@
   const recordPanel = document.getElementById("record-panel");
   const recordImages = document.getElementById("record-images");
   const recordFields = document.getElementById("record-fields");
+  const recordResidents = document.getElementById("record-residents");
+  const recordResidentList = document.getElementById("record-resident-list");
   const collectedCount = document.getElementById("collected-count");
   let markerMode = false;
   let boundaryLayer;
@@ -291,6 +293,27 @@
       empty.textContent = "Este registro não possui outras informações.";
       recordFields.appendChild(empty);
     }
+
+    recordResidentList.replaceChildren();
+    for (const resident of record.residents || []) {
+      const card = document.createElement("article");
+      card.className = "record-resident";
+      const name = document.createElement("h5");
+      name.textContent = resident.name || "Morador sem nome informado";
+      card.appendChild(name);
+      for (const field of resident.fields || []) {
+        const item = document.createElement("dl");
+        item.className = "record-field";
+        const label = document.createElement("dt");
+        label.textContent = field.label;
+        const value = document.createElement("dd");
+        value.textContent = formatFieldValue(field.value);
+        item.append(label, value);
+        card.appendChild(item);
+      }
+      recordResidentList.appendChild(card);
+    }
+    recordResidents.hidden = !recordResidentList.childElementCount;
   }
 
   async function loadMoradores() {
@@ -309,6 +332,7 @@
           !Number.isFinite(record.latitude) ||
           !Number.isFinite(record.longitude) ||
           !Array.isArray(record.fields) ||
+          !Array.isArray(record.residents) ||
           !Array.isArray(record.images)
         ) {
           throw new Error("Um registro recebido do Firebase está em formato inválido.");

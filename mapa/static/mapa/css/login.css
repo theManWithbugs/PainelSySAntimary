@@ -126,3 +126,62 @@ body.login-page .login #content { padding: 0; }
 @media (prefers-reduced-motion: reduce) {
   .login-field input, .login-submit { transition: none; }
 }
+
+:root {
+  --login-forest: #174a35;
+  --login-deep: #173d2e;
+  --login-ink: #26352d;
+  --login-muted: #68766d;
+  --login-line: #dfe5df;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body.login-page { background: #f2f4f1; }
+.login-brand { gap: 11px; }
+.login-brand-mark {
+  border: 0;
+  border-left: 3px solid #d6bd69;
+  border-radius: 2px;
+  color: #174a35;
+  background: #f0f3e7;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+.login-brand-copy { gap: 3px; }
+.login-brand-copy strong { font-size: 14px; letter-spacing: .06em; }
+.login-brand-copy small { color: #c2d0c4; font-size: 9px; letter-spacing: .08em; }
+.login-visual {
+  background:
+    linear-gradient(180deg, #10271a10 4%, #10271a18 38%, #10271af0 100%),
+    linear-gradient(90deg, #10271a28, transparent 80%),
+    url("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/8/134/78") center / cover,
+    #183b2c;
+}
+.visual-topline { font-size: 10px; letter-spacing: .07em; }
+.visual-kicker { font-size: 11px; letter-spacing: .1em; }
+.visual-copy h1 { font-weight: 500; letter-spacing: -.035em; }
+.visual-copy p { font-size: 15px; }
+.login-side { background: #fbfcfa; }
+.login-lock { border-radius: 4px; background: #edf2eb; }
+.login-eyebrow { color: #526e59; font-size: 10px; letter-spacing: .07em; }
+.login-form-wrap h2 { color: #203b2c; font-weight: 600; letter-spacing: -.025em; }
+.login-description { color: #64736a; font-size: 13px; }
+.login-alert { border-radius: 4px; }
+.login-field label { color: #35493d; font-size: 11px; }
+.login-field input { border-radius: 4px; }
+.login-submit {
+  border-color: #174a35;
+  border-radius: 4px;
+  background: #174a35;
+  box-shadow: none;
+  font-size: 13px;
+}
+.login-submit:hover { background: #123d2b; }
+.login-security { font-size: 10px; }
+.login-footer { color: #6c796f; font-size: 10px; }
+
+@media (max-width: 680px) {
+  .login-mobile-brand .login-brand-mark { color: #f0f3e7; background: #174a35; }
+  .login-mobile-brand .login-brand-copy small { color: #64786a; }
+}

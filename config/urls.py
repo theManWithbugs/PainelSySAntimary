@@ -22,6 +22,9 @@ from mapa import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', views.health_check, name='health'),
+    path('api/indicadores/', views.indicadores_api, name='indicadores-api'),
+    path('api/moradores/<str:record_id>/', views.morador_detail_api, name='morador-detail-api'),
     path('api/moradores/', views.moradores_api, name='moradores-api'),
+    path('indicadores/', views.indicadores, name='indicadores'),
     path('', views.home, name='home'),
 ]

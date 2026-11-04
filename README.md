@@ -19,12 +19,22 @@ $env:FIREBASE_SERVICE_ACCOUNT_PATH = "$env:LOCALAPPDATA\Antimary\firebase-servic
 
 O mapa lê a coleção `moradores` do Cloud Firestore e usa `localizacao` no formato
 `latitude, longitude`. Fotos são carregadas das URLs HTTPS do Cloudinary em
-`imagens[].url`.
+`imagens[].url`. Ao selecionar um registro no mapa, também são exibidos os
+moradores vinculados em `moradores[]`; CPF e telefone desses moradores não são
+retornados pela API.
 
-O mapa e a API de moradores são públicos e exibem os dados e imagens retornados
-pelo Firebase. Publique somente registros e fotos autorizados para divulgação.
-O Django Admin continua protegido por autenticação. Se precisar administrar o
-site, crie um usuário administrador com:
+O mapa e a API de moradores exigem o PIN `1242`; após informá-lo, o acesso fica
+liberado na sessão do navegador. Esse PIN fixo é uma barreira simples e não
+substitui autenticação adequada para proteger informações confidenciais.
+Após o acesso, a página `/indicadores/` apresenta um resumo dos cadastros por
+colônia e gênero informado dos moradores vinculados, além da lista de registros.
+Selecione o nome de um cadastro para abrir sua ficha detalhada, com os campos
+disponíveis, moradores vinculados e imagens autorizadas.
+Use **Gerar relatório PDF** para abrir a impressão do navegador e salvar os
+indicadores e a lista completa de cadastros como PDF.
+Publique somente registros e fotos autorizados para divulgação. O Django Admin
+continua protegido por autenticação. Se precisar administrar o site, crie um
+usuário administrador com:
 
 ```powershell
 .\venv\Scripts\python.exe manage.py migrate

@@ -9,6 +9,8 @@ from mapa.firebase_data import (
     _coordinates,
     _cloudinary_images,
     _get_firestore_client,
+    get_cadastros_summary,
+    get_morador_detail,
 )
 
 
@@ -62,6 +64,16 @@ class FirebaseDataTests(SimpleTestCase):
                 'foreign_key': 'internal reference',
                 'simulado': False,
                 'imagens': [],
+                'moradores': [
+                    {
+                        'nome': 'Familiar de teste',
+                        'relacao': 'Cônjuge',
+                        'dataNascimento': '01/01/2000',
+                        'cpf': '123.456.789-00',
+                        'telefone': '999999999',
+                    },
+                    'registro inválido',
+                ],
             },
         )
 
@@ -72,6 +84,103 @@ class FirebaseDataTests(SimpleTestCase):
         self.assertEqual(record['title'], 'Pessoa de teste')
         self.assertNotIn('foreign_key', record)
         self.assertNotIn('simulado', record)
+        self.assertEqual(record['residents'], [{
+            'name': 'Familiar de teste',
+            'fields': [
+                {'label': 'Data de nascimento', 'value': '01/01/2000'},
+                {'label': 'Relação familiar', 'value': 'Cônjuge'},
+            ],
+        }])
+        self.assertNotIn('cpf', str(record['residents']).lower())
+        self.assertNotIn('telefone', str(record['residents']).lower())
+
+    @patch('mapa.firebase_data._get_firestore_client')
+    def test_cadastro_summary_includes_records_without_coordinates(self, get_client):
+        documents = [
+            SimpleNamespace(
+                id='record-1',
+                to_dict=lambda: {
+                    'nome': 'Cadastro um',
+                    'colonia': 'Colônia Esperança',
+                    'registrado_em': '2025-03-14',
+                    'moradores': [
+                        {'nome': 'Pessoa um', 'genero': 'Feminino', 'cpf': 'não retornar'},
+                        {'nome': 'Pessoa dois', 'genero': 'Masculino'},
+                    ],
+                    'localizacao': '-9.3, -68.2',
+                },
+            ),
+            SimpleNamespace(
+                id='record-2',
+                to_dict=lambda: {
+                    'nome': 'Cadastro sem coordenadas',
+                    'moradores': ['inválido'],
+                    'localizacao': 'inválida',
+                },
+            ),
+        ]
+        get_client.return_value.collection.return_value.stream.return_value = documents
+
+        summary = get_cadastros_summary()
+
+        self.assertEqual(summary['total_records'], 2)
+        self.assertEqual(summary['linked_residents'], 2)
+        self.assertEqual(len(summary['records']), 2)
+        self.assertEqual(summary['records'][1]['colony'], 'Não informada')
+        self.assertEqual(summary['by_colony'][0], {'label': 'Colônia Esperança', 'count': 1})
+        self.assertEqual(summary['residents_by_gender'], [
+            {'label': 'Feminino', 'count': 1},
+            {'label': 'Masculino', 'count': 1},
+        ])
+        self.assertNotIn('cpf', str(summary).lower())
+        self.assertNotIn('localizacao', str(summary).lower())
+
+    @patch('mapa.firebase_data._get_firestore_client')
+    def test_morador_detail_returns_full_safe_fields_without_coordinates(self, get_client):
+        document = SimpleNamespace(
+            id='record-1',
+            exists=True,
+            to_dict=lambda: {
+                'nome': 'Cadastro detalhado',
+                'colonia': 'Colônia Esperança',
+                'descricao_propriedade': 'Área de produção familiar',
+                'foreign_key': 'internal reference',
+                'localizacao': 'inválida',
+                'imagens': [],
+                'moradores': [{
+                    'nome': 'Pessoa vinculada',
+                    'escolaridade': 'Ensino médio',
+                    'genero': 'Feminino',
+                    'cpf': 'não retornar',
+                    'telefone': 'não retornar',
+                }],
+            },
+        )
+        get_client.return_value.collection.return_value.document.return_value.get.return_value = document
+
+        detail = get_morador_detail('record-1')
+
+        self.assertEqual(detail['title'], 'Cadastro detalhado')
+        self.assertIsNone(detail['coordinates'])
+        self.assertIn(
+            {'label': 'Descrição da propriedade', 'value': 'Área de produção familiar'},
+            detail['fields'],
+        )
+        self.assertEqual(detail['residents'][0]['fields'], [
+            {'label': 'Escolaridade', 'value': 'Ensino médio'},
+            {'label': 'Gênero', 'value': 'Feminino'},
+        ])
+        self.assertNotIn('cpf', str(detail).lower())
+        self.assertNotIn('telefone', str(detail).lower())
+        self.assertNotIn('foreign_key', str(detail))
+
+    @patch('mapa.firebase_data._get_firestore_client')
+    def test_morador_detail_returns_none_for_missing_record(self, get_client):
+        get_client.return_value.collection.return_value.document.return_value.get.return_value = (
+            SimpleNamespace(exists=False)
+        )
+
+        self.assertIsNone(get_morador_detail('missing-record'))
 
     @patch.dict(
         'os.environ',
