@@ -165,23 +165,23 @@ h1 span { color: #637a6d; font-weight: 400; }
 .record-panel { min-width: 0; max-height: 540px; overflow-y: auto; padding: 17px 15px; border-left: 1px solid #e9ede9; background: #fff; }
 .record-panel[hidden] { display: none; }
 .record-panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-.record-panel-header h3 { margin: 5px 0 0; color: #2d4035; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.record-panel-header h3 { margin: 5px 0 0; color: #2d4035; font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
 .record-close { display: grid; width: 27px; height: 27px; flex: 0 0 27px; place-items: center; border: 1px solid #e7ece7; border-radius: 7px; color: #718078; background: #fff; font-size: 18px; line-height: 1; }
 .record-close:hover { color: #244b34; background: #f3f7f3; }
-.record-location { margin: 11px 0 13px; color: #7a8a7f; font-size: 9px; font-variant-numeric: tabular-nums; }
+.record-location { margin: 11px 0 13px; color: #7a8a7f; font-size: 12px; font-variant-numeric: tabular-nums; }
 .record-images { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-bottom: 12px; }
 .record-image-link { display: block; overflow: hidden; aspect-ratio: 1.3; border: 1px solid #e8ede8; border-radius: 7px; background: #f3f6f2; }
 .record-image-link img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .record-fields { display: grid; }
 .record-field { padding: 9px 0; border-top: 1px solid #edf0ed; }
-.record-field dt { margin-bottom: 4px; color: #8a968e; font-size: 8px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
-.record-field dd { margin: 0; color: #45554b; font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; white-space: pre-wrap; }
+.record-field dt { margin-bottom: 4px; color: #8a968e; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.record-field dd { margin: 0; color: #45554b; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; white-space: pre-wrap; }
 .record-residents { margin-top: 15px; }
 .record-residents[hidden] { display: none; }
-.record-residents h4 { margin: 0 0 8px; color: #2d4035; font-size: 11px; font-weight: 700; }
+.record-residents h4 { margin: 0 0 8px; color: #2d4035; font-size: 14px; font-weight: 700; }
 .record-resident { padding: 9px; border: 1px solid #e9ede9; border-radius: 7px; }
 .record-resident + .record-resident { margin-top: 8px; }
-.record-resident h5 { margin: 0; color: #45554b; font-size: 10px; font-weight: 600; }
+.record-resident h5 { margin: 0; color: #45554b; font-size: 13px; font-weight: 600; }
 .record-resident .record-field { padding: 8px 0 0; }
 .map-card-footer { display: flex; align-items: center; justify-content: space-between; min-height: 40px; padding: 8px 17px; border-top: 1px solid #edf0ed; color: #8a968e; font-size: 9px; }
 .map-card-footer > span:first-child { display: flex; align-items: center; gap: 7px; }
@@ -332,8 +332,8 @@ h1 span { color: #637a6d; font-weight: 400; }
   .map-tool { width: 38px; height: 38px; border-radius: 9px; }
   .map-card-footer { min-height: 43px; padding-right: 19px; padding-left: 19px; }
   .record-field { padding: 10px 0; }
-  .record-field dt { font-size: 8px; }
-  .record-field dd { font-size: 11px; line-height: 1.55; }
+  .record-field dt { font-size: 12px; }
+  .record-field dd { font-size: 14px; line-height: 1.55; }
 }
 
 @media (min-width: 1500px) {
@@ -615,9 +615,9 @@ h1 {
   font-size: 22px;
   letter-spacing: .65em;
   text-align: center;
-  transition: border-color .15s, box-shadow .15s, font-size .15s;
+  transition: border-color .15s, box-shadow .15s;
 }
-.pin-form input:focus { border-color: #527b58; box-shadow: 0 0 0 3px #527b581c, 0 2px 5px #1c3e2d09; font-size: 26px; }
+.pin-form input:focus { border-color: #527b58; box-shadow: 0 0 0 3px #527b581c, 0 2px 5px #1c3e2d09; }
 .pin-form small { margin-top: 1px; color: #738076; font-size: 10px; }
 .pin-form button {
   display: flex;
@@ -703,9 +703,8 @@ h1 {
   background: #fff;
   font: inherit;
   font-size: 11px;
-  transition: border-color .15s, box-shadow .15s, font-size .15s;
 }
-.registrations-search input:focus { border-color: #64866a; box-shadow: 0 0 0 3px #527b581c; font-size: 14px; }
+.registrations-search input:focus { border-color: #64866a; box-shadow: 0 0 0 3px #527b581c; }
 .registrations-table-wrap { overflow-x: auto; }
 .registrations-table { width: 100%; border-collapse: collapse; text-align: left; }
 .registrations-table th, .registrations-table td { padding: 12px 16px; border-bottom: 1px solid #edf0ed; color: #536258; font-size: 11px; white-space: nowrap; }
@@ -750,14 +749,14 @@ h1 {
 .detail-state.is-error { color: #873e31; background: #fbf5f3; }
 .detail-state[hidden], #detail-content[hidden] { display: none; }
 #detail-content { padding: 0 20px 20px; }
-.detail-location { margin: 14px 0; color: #68766d; font-size: 11px; }
+.detail-location { margin: 14px 0; color: #68766d; font-size: 13px; }
 .detail-section { margin-top: 21px; }
-.detail-section h3 { margin: 0 0 9px; color: #344a39; font-size: 13px; font-weight: 600; }
+.detail-section h3 { margin: 0 0 9px; color: #344a39; font-size: 15px; font-weight: 600; }
 .detail-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 22px; }
 .detail-fields .record-field { min-width: 0; }
 .detail-fields .record-field dd { overflow-wrap: anywhere; }
 .detail-section .record-resident { margin-top: 8px; }
-.detail-section .record-resident h4 { margin: 0; color: #3c5143; font-size: 12px; font-weight: 600; }
+.detail-section .record-resident h4 { margin: 0; color: #3c5143; font-size: 14px; font-weight: 600; }
 .visually-hidden {
   position: absolute;
   width: 1px;
